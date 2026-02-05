@@ -1,5 +1,4 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Button, Avatar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
@@ -23,36 +22,37 @@ const Navbar = () => {
   const isAuthenticated = !!localStorage.getItem('token');
 
   return (
-    <AppBar position="static" sx={{ mb: 3 }}>
-      <Toolbar>
-        <Typography 
-          variant="h6" 
-          component="div" 
-          sx={{ flexGrow: 1, cursor: 'pointer' }}
-          onClick={handleFeedClick}
-        >
-          MiniSocial
-        </Typography>
-        
+    <header className="app-header">
+      <div className="logo-container">
+        <div className="logo-badge">M</div>
+        <div className="logo-text">MiniSocial</div>
+      </div>
+      
+      <div className="user-actions">
         {isAuthenticated ? (
           <>
-            <Avatar 
-              sx={{ mr: 2, bgcolor: 'secondary.main' }}
-              alt={user.username}
-            >
+            <div className="avatar">
               {user.username?.charAt(0)?.toUpperCase() || 'U'}
-            </Avatar>
-            <Button color="inherit" onClick={handleLogout}>
-              Logout
-            </Button>
+            </div>
+            <button 
+              className="logout-btn" 
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
           </>
         ) : (
-          <Button color="inherit" onClick={handleLoginClick}>
+          <button className="logout-btn" onClick={handleLoginClick}>
             Login
-          </Button>
+          </button>
         )}
-      </Toolbar>
-    </AppBar>
+      </div>
+    </header>
   );
 };
 

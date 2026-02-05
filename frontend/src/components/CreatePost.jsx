@@ -1,15 +1,4 @@
 import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  TextField, 
-  Button, 
-  Box, 
-  Typography,
-  IconButton,
-  Alert
-} from '@mui/material';
-import { AddPhotoAlternate } from '@mui/icons-material';
 import { postsAPI } from '../services/api';
 
 const CreatePost = ({ onPostCreated }) => {
@@ -17,11 +6,20 @@ const CreatePost = ({ onPostCreated }) => {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      
       setImage(file);
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -34,9 +32,8 @@ const CreatePost = ({ onPostCreated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    setError('');
     if (!text.trim() && !image) {
-      setError('Please enter text or upload an image.');
+      alert('Please enter text or upload an image');
       return;
     }
 
@@ -58,8 +55,15 @@ const CreatePost = ({ onPostCreated }) => {
       setText('');
       setImage(null);
       setImagePreview(null);
+      
+      // Reset file input
+      const fileInput = document.getElementById('image-upload');
+      if (fileInput) {
+        fileInput.value = '';
+      }
     } catch (error) {
-      setError(error.response?.data?.message || 'Failed to create post.');
+      console.error('Error creating post:', error);
+      alert('Failed to create post. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -68,7 +72,6 @@ const CreatePost = ({ onPostCreated }) => {
   const handleRemoveImage = () => {
     setImage(null);
     setImagePreview(null);
-    // Reset file input
     const fileInput = document.getElementById('image-upload');
     if (fileInput) {
       fileInput.value = '';
@@ -76,81 +79,64 @@ const CreatePost = ({ onPostCreated }) => {
   };
 
   return (
-    <Card sx={{ mb: 3, maxWidth: 600, mx: 'auto' }}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Create Post
-        </Typography>
+    <div className="create-post">
+      <form onSubmit={handleSubmit}>
+        <textarea
+          placeholder="What's on your mind?"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows="3"
+        />
         
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
+        {imagePreview && (
+          <div className="image-preview-container">
+            <img 
+              src={imagePreview} 
+              alt="Preview" 
+              className="image-preview"
+            />
+            <button
+              type="button"
+              className="remove-image-btn"
+              onClick={handleRemoveImage}
+              title="Remove image"
+            >
+              ×
+            </button>
+          </div>
         )}
-
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            placeholder="What's on your mind?"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            sx={{ mb: 2 }}
-          />
+        
+        <div className="post-actions">
+          <label className="btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            Add Image
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+            />
+          </label>
           
-          {imagePreview && (
-            <Box sx={{ mb: 2, position: 'relative' }}>
-              <img 
-                src={imagePreview} 
-                alt="Preview" 
-                style={{ 
-                  maxWidth: '100%', 
-                  maxHeight: '300px', 
-                  borderRadius: '8px',
-                  objectFit: 'cover'
-                }} 
-              />
-              <Button 
-                onClick={handleRemoveImage}
-                variant="contained"
-                color="error"
-                size="small"
-                sx={{ mt: 1 }}
-              >
-                Remove Image
-              </Button>
-            </Box>
-          )}
-          
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<AddPhotoAlternate />}
-            >
-              Add Image
-              <input
-                id="image-upload"
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-            </Button>
-            
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={loading || (!text.trim() && !image)}
-            >
-              {loading ? 'Posting...' : 'Post'}
-            </Button>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={loading || (!text.trim() && !image)}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 2L11 13"></path>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+            </svg>
+            {loading ? 'Posting...' : 'Share'}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

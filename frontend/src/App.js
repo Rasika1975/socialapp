@@ -3,7 +3,17 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Feed from './pages/Feed';
-import ProtectedRoute from './components/ProtectedRoute';
+
+// Simple Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = !!localStorage.getItem('token');
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
 
 function App() {
   return (
