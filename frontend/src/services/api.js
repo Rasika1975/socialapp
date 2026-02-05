@@ -37,4 +37,4 @@ export const postsAPI = {
 export default api;
 
 
-export default api;
+
