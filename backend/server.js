@@ -10,7 +10,13 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: [
+      "http://localhost:3000",
+      "https://socialapp-1-8dcs.onrender.com",
+    ],
+    credentials: true,
+  }));
 app.use(express.json());
 
 // API Routes
