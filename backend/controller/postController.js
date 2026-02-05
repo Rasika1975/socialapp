@@ -1,13 +1,11 @@
 const Post = require("../models/Post");
-const fs = require("fs");
-const path = require("path");
 
 // @desc    Create a post
 // @route   POST /api/posts
 // @access  Private
 const createPost = async (req, res) => {
   const { text } = req.body;
-  const image = req.file ? `/uploads/${req.file.filename}` : null;
+  const image = req.file ? req.file.path : null;
 
   if (!text && !image) {
     return res
@@ -126,14 +124,6 @@ const deletePost = async (req, res) => {
 
     if (post.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "User not authorized to delete this post" });
-    }
-
-    // Delete image from uploads folder if it exists
-    if (post.image) {
-      const imagePath = path.join(__dirname, "..", post.image);
-      fs.unlink(imagePath, (err) => {
-        if (err) console.error(`Failed to delete image: ${imagePath}`, err);
-      });
     }
 
     await post.deleteOne();
