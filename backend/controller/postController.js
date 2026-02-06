@@ -1,5 +1,18 @@
 const Post = require("../models/Post");
 
+// Helper to get base URL
+const getBaseUrl = (req) => {
+  return process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get("host")}`;
+};
+
+// Helper to fix localhost URLs in production
+const fixPostImage = (post, baseUrl) => {
+  if (post.image && post.image.includes("localhost")) {
+    return post.image.replace(/http:\/\/localhost:\d+/, baseUrl);
+  }
+  return post.image;
+};
+
 // @desc    Create a post
 // @route   POST /api/posts
 // @access  Private
@@ -9,7 +22,7 @@ const createPost = async (req, res) => {
 
   // Normalize image path: if it's a local file (not a Cloudinary URL), construct the full backend URL
   if (image && !image.startsWith("http")) {
-    const baseUrl = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get("host")}`;
+    const baseUrl = getBaseUrl(req);
     image = `${baseUrl}/uploads/${req.file.filename}`;
   }
 
@@ -26,7 +39,11 @@ const createPost = async (req, res) => {
       text,
       image,
     });
-    res.status(201).json(post);
+
+    const postResponse = post.toObject();
+    postResponse.image = fixPostImage(postResponse, getBaseUrl(req));
+
+    res.status(201).json(postResponse);
   } catch (error) {
     console.error("Error creating post:", error);
     res.status(500).json({ message: "Server Error" });
@@ -45,8 +62,15 @@ const getAllPosts = async (req, res) => {
     const posts = await Post.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
     const totalPosts = await Post.countDocuments();
 
+    const baseUrl = getBaseUrl(req);
+    const sanitizedPosts = posts.map((post) => {
+      const p = post.toObject();
+      p.image = fixPostImage(p, baseUrl);
+      return p;
+    });
+
     res.json({
-      posts,
+      posts: sanitizedPosts,
       currentPage: page,
       totalPages: Math.ceil(totalPosts / limit),
       totalPosts,
@@ -82,7 +106,9 @@ const likePost = async (req, res) => {
     }
 
     await post.save();
-    res.json(post);
+    const p = post.toObject();
+    p.image = fixPostImage(p, getBaseUrl(req));
+    res.json(p);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
@@ -110,7 +136,9 @@ const commentOnPost = async (req, res) => {
       text,
     });
     await post.save();
-    res.status(201).json(post);
+    const p = post.toObject();
+    p.image = fixPostImage(p, getBaseUrl(req));
+    res.status(201).json(p);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
