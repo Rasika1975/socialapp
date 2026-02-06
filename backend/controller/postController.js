@@ -19,11 +19,15 @@ const fixPostImage = (post, baseUrl) => {
 const createPost = async (req, res) => {
   const { text } = req.body;
   let image = req.file ? req.file.path : null;
-
-  // Normalize image path: if it's a local file (not a Cloudinary URL), construct the full backend URL
-  if (image && !image.startsWith("http")) {
-    const baseUrl = getBaseUrl(req);
-    image = `${baseUrl}/uploads/${req.file.filename}`;
+  
+  // CRITICAL: In production, if a file is uploaded, it MUST be a Cloudinary URL.
+  // If `req.file` exists but `req.file.path` is not a full URL (i.e., doesn't start with "http"),
+  // it means Cloudinary is misconfigured and the app has fallen back to broken local storage.
+  // We must fail here to prevent saving bad data and alert the developer.
+  if (req.file && !image.startsWith("http")) {
+    console.error("CRITICAL UPLOAD ERROR: Cloudinary storage is not working. Check environment variables. Uploaded file path is not a URL:", image);
+    // Do not save the post. Return a server error.
+    return res.status(500).json({ message: "Server file upload service is misconfigured. Post not created." });
   }
 
   if (!text && !image) {
