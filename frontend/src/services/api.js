@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://socialapp-xt0x.onrender.com/api';
+// Ensure this matches your ACTUAL active backend URL
+const API_BASE_URL = 'https://socialapp-xt0x.onrender.com/api'; 
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -35,6 +36,3 @@ export const postsAPI = {
 };
 
 export default api;
-
-
-

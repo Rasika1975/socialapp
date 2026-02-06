@@ -1,5 +1,15 @@
 const Post = require("../models/Post");
 
+// Helper to sanitize post objects (remove broken localhost/local paths)
+const sanitizePost = (post) => {
+  const p = post.toObject ? post.toObject() : post;
+  // If image is local path, localhost, or not a web URL, mark it as null
+  if (p.image && (p.image.includes("localhost") || p.image.includes("/opt/render") || !p.image.startsWith("http"))) {
+    p.image = null;
+  }
+  return p;
+};
+
 // @desc    Create a post
 // @route   POST /api/posts
 // @access  Private
@@ -50,9 +60,10 @@ const getAllPosts = async (req, res) => {
     const posts = await Post.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
     const totalPosts = await Post.countDocuments();
 
+    const sanitizedPosts = posts.map((post) => sanitizePost(post));
+
     res.json({
-      // No more sanitization needed once old posts are deleted
-      posts: posts,
+      posts: sanitizedPosts,
       currentPage: page,
       totalPages: Math.ceil(totalPosts / limit),
       totalPosts,
@@ -88,7 +99,7 @@ const likePost = async (req, res) => {
     }
 
     await post.save();
-    res.json(post);
+    res.json(sanitizePost(post));
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
@@ -116,7 +127,7 @@ const commentOnPost = async (req, res) => {
       text,
     });
     await post.save();
-    res.status(201).json(post);
+    res.status(201).json(sanitizePost(post));
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
