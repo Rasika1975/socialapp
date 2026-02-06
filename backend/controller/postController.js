@@ -1,18 +1,5 @@
 const Post = require("../models/Post");
 
-// Helper to get base URL
-const getBaseUrl = (req) => {
-  return process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get("host")}`;
-};
-
-// Helper to fix localhost URLs in production
-const fixPostImage = (post, baseUrl) => {
-  if (post.image && post.image.includes("localhost")) {
-    return post.image.replace(/http:\/\/localhost:\d+/, baseUrl);
-  }
-  return post.image;
-};
-
 // @desc    Create a post
 // @route   POST /api/posts
 // @access  Private
@@ -44,10 +31,7 @@ const createPost = async (req, res) => {
       image,
     });
 
-    const postResponse = post.toObject();
-    postResponse.image = fixPostImage(postResponse, getBaseUrl(req));
-
-    res.status(201).json(postResponse);
+    res.status(201).json(post);
   } catch (error) {
     console.error("Error creating post:", error);
     res.status(500).json({ message: "Server Error" });
@@ -66,15 +50,9 @@ const getAllPosts = async (req, res) => {
     const posts = await Post.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
     const totalPosts = await Post.countDocuments();
 
-    const baseUrl = getBaseUrl(req);
-    const sanitizedPosts = posts.map((post) => {
-      const p = post.toObject();
-      p.image = fixPostImage(p, baseUrl);
-      return p;
-    });
-
     res.json({
-      posts: sanitizedPosts,
+      // No more sanitization needed once old posts are deleted
+      posts: posts,
       currentPage: page,
       totalPages: Math.ceil(totalPosts / limit),
       totalPosts,
@@ -110,9 +88,7 @@ const likePost = async (req, res) => {
     }
 
     await post.save();
-    const p = post.toObject();
-    p.image = fixPostImage(p, getBaseUrl(req));
-    res.json(p);
+    res.json(post);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
@@ -140,9 +116,7 @@ const commentOnPost = async (req, res) => {
       text,
     });
     await post.save();
-    const p = post.toObject();
-    p.image = fixPostImage(p, getBaseUrl(req));
-    res.status(201).json(p);
+    res.status(201).json(post);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
@@ -173,4 +147,33 @@ const deletePost = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getAllPosts, likePost, commentOnPost, deletePost };
+// @desc    Delete all posts (for cleanup as requested)
+// @route   DELETE /api/posts/delete-all-posts
+// @access  (Should be protected in a real app)
+const deleteAllPosts = async (req, res) => {
+  try {
+    const result = await Post.deleteMany({});
+    res.json({ message: `Successfully deleted ${result.deletedCount} posts.` });
+  } catch (error) {
+    console.error("Error deleting all posts:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// @desc    Test Cloudinary upload (for debugging as requested)
+// @route   POST /api/posts/cloudinary-test
+// @access  Public
+const cloudinaryTest = (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+  
+  res.json({
+    success: true,
+    message: "Cloudinary working!",
+    cloudinaryUrl: req.file.path,
+    filename: req.file.filename
+  });
+};
+
+module.exports = { createPost, getAllPosts, likePost, commentOnPost, deletePost, deleteAllPosts, cloudinaryTest };

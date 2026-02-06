@@ -22,9 +22,6 @@ app.use(cors({
   }));
 app.use(express.json());
 
-// Serve static files from uploads directory (fallback for local storage)
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 // API Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/posts", require("./routes/postRoutes"));
