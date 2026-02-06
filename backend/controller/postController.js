@@ -5,7 +5,12 @@ const Post = require("../models/Post");
 // @access  Private
 const createPost = async (req, res) => {
   const { text } = req.body;
-  const image = req.file ? req.file.path : null;
+  let image = req.file ? req.file.path : null;
+
+  // Normalize image path: if it's a local file (not a Cloudinary URL), construct the full backend URL
+  if (image && !image.startsWith("http")) {
+    image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+  }
 
   if (!text && !image) {
     return res

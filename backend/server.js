@@ -9,6 +9,9 @@ connectDB();
 
 const app = express();
 
+// Trust proxy is required for secure cookies and protocol detection on Render
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(cors({
     origin: [
@@ -18,6 +21,9 @@ app.use(cors({
     credentials: true,
   }));
 app.use(express.json());
+
+// Serve static files from uploads directory (fallback for local storage)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // API Routes
 app.use("/api/auth", require("./routes/authRoutes"));
