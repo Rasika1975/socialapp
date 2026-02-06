@@ -8,7 +8,7 @@ const {
   deletePost,
 } = require("../controller/postController");
 const { protect } = require("../middleware/authMiddleware");
-const upload = require("../middleware/upload");
+const upload = require("../middleware/uploadMiddleware");
 
 router
   .route("/")
