@@ -148,7 +148,7 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
 
       {post.image && (
         <img 
-          src={`http://localhost:5000${post.image}`} 
+          src={post.image} 
           alt="Post" 
           className="post-image"
           onError={(e) => {
