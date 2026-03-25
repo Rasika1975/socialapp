@@ -23,21 +23,26 @@ const Navbar = () => {
 
   return (
     <header className="app-header">
-      <div className="logo-container">
+      <button className="logo-container" onClick={handleFeedClick} type="button">
         <div className="logo-badge">M</div>
-        <div className="logo-text">MiniSocial</div>
-      </div>
-      
+        <div className="logo-group">
+          <div className="logo-text">MiniSocial</div>
+          <div className="logo-subtext">Gaming Social Hub</div>
+        </div>
+      </button>
+
       <div className="user-actions">
+        <span className="live-badge">Live</span>
         {isAuthenticated ? (
           <>
             <div className="avatar">
               {user.username?.charAt(0)?.toUpperCase() || 'U'}
             </div>
-            <button 
-              className="logout-btn" 
+            <button
+              className="logout-btn"
               onClick={handleLogout}
               title="Logout"
+              type="button"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -47,7 +52,7 @@ const Navbar = () => {
             </button>
           </>
         ) : (
-          <button className="logout-btn" onClick={handleLoginClick}>
+          <button className="logout-btn" onClick={handleLoginClick} type="button">
             Login
           </button>
         )}

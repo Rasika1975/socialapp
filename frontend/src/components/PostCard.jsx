@@ -9,7 +9,8 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
   const [replyText, setReplyText] = useState('');
 
   const isOwner = currentUser?._id === post.userId;
-  const isLiked = post.likes?.some(like => like.userId === currentUser?._id);
+  const isLiked = post.likes?.some((like) => like.userId === currentUser?._id);
+  const isRecent = post.createdAt && (new Date() - new Date(post.createdAt)) < 1000 * 60 * 60 * 6;
 
   const handleLike = async () => {
     try {
@@ -34,15 +35,11 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
 
   const handleShare = async () => {
     try {
-      // Copy post URL to clipboard
       const postUrl = `${window.location.origin}/post/${post._id}`;
       await navigator.clipboard.writeText(postUrl);
-      
-      // Show success message (you could implement a toast notification here)
       alert('Post link copied to clipboard!');
     } catch (error) {
       console.error('Error sharing post:', error);
-      // Fallback: show post details
       alert(`Post by ${post.username}: ${post.text || 'Check out this post!'}`);
     }
   };
@@ -68,15 +65,9 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
     if (!replyText.trim()) return;
 
     try {
-      // Add reply functionality - you'll need to implement this in your backend
-      // For now, I'll show how the UI would work
       console.log(`Replying to comment ${commentId}: ${replyText}`);
       setReplyText('');
       setReplyingTo(null);
-      
-      // You would call your API here to add the reply
-      // await postsAPI.replyToComment(post._id, commentId, replyText.trim());
-      
       alert('Reply functionality would be implemented here!');
     } catch (error) {
       console.error('Error replying:', error);
@@ -87,47 +78,44 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) {
       const diffInMinutes = Math.floor((now - date) / (1000 * 60));
       return diffInMinutes <= 1 ? 'Just now' : `${diffInMinutes}m ago`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric'
-      });
     }
+
+    if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    }
+
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   return (
     <div className="post-card">
-      {/* Post Header */}
       <div className="post-header">
         <div className="header-left">
           <div className="avatar-large">
             {post.username?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           <div className="user-info">
-            <div className="username">{post.username || 'Unknown User'}</div>
+            <div className="user-meta">
+              <div className="username">{post.username || 'Unknown User'}</div>
+              {isRecent && <span className="live-badge">Live</span>}
+            </div>
             <div className="time-text">{formatDate(post.createdAt)}</div>
           </div>
         </div>
         {isOwner && (
-          <button 
-            className="action-btn" 
+          <button
+            className="action-btn"
             onClick={handleDelete}
             title="Delete post"
-            style={{
-              color: '#EF4444',
-              background: 'none',
-              border: 'none',
-              padding: '8px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              transition: 'var(--transition)'
-            }}
+            type="button"
+            style={{ color: '#fca5a5' }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18"></path>
@@ -139,17 +127,17 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
         )}
       </div>
 
-      {/* Post Content */}
-      {post.text && (
-        <div className="post-text">
-          {post.text}
-        </div>
-      )}
+      <div className="post-caption">
+        <span className="feature-pill">Featured drop</span>
+        <span className="time-text">{post.likes?.length || 0} hype</span>
+      </div>
+
+      {post.text && <div className="post-text">{post.text}</div>}
 
       {post.image && (
-        <img 
-          src={post.image} 
-          alt="Post" 
+        <img
+          src={post.image}
+          alt="Post"
           className="post-image"
           onError={(e) => {
             e.target.style.display = 'none';
@@ -157,22 +145,23 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
         />
       )}
 
-      {/* Action Bar */}
       <div className="action-divider"></div>
       <div className="action-bar">
-        <button 
+        <button
           className={`action-btn ${isLiked ? 'liked' : ''}`}
           onClick={handleLike}
+          type="button"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
           </svg>
           <span>{post.likes?.length || 0}</span>
         </button>
 
-        <button 
+        <button
           className="action-btn"
           onClick={() => setShowComments(!showComments)}
+          type="button"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -180,10 +169,11 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
           <span>{post.comments?.length || 0}</span>
         </button>
 
-        <button 
+        <button
           className="action-btn"
           onClick={handleShare}
           title="Share this post"
+          type="button"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="18" cy="5" r="3"></circle>
@@ -196,82 +186,54 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
         </button>
       </div>
 
-      {/* Comments Section */}
       {showComments && (
-        <div style={{ marginTop: '16px' }}>
-          <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '12px' }}>
-            {post.comments?.map(comment => (
-              <div key={comment._id} style={{ 
-                marginBottom: '12px',
-                borderLeft: '2px solid var(--border)',
-                paddingLeft: '12px'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'flex-start', 
-                  gap: '8px', 
-                  marginBottom: '8px'
-                }}>
-                  <div className="avatar" style={{ 
-                    width: '28px', 
-                    height: '28px', 
-                    fontSize: '12px',
-                    background: '#6B7280'
-                  }}>
+        <div className="comments-panel">
+          <div className="comments-list">
+            {post.comments?.map((comment) => (
+              <div key={comment._id} className="comment-card">
+                <div className="comment-head">
+                  <div
+                    className="avatar"
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      minWidth: '28px',
+                      fontSize: '12px',
+                      background: 'linear-gradient(135deg, #6d28d9 0%, #c084fc 100%)',
+                      boxShadow: 'none'
+                    }}
+                  >
                     {comment.username?.charAt(0)?.toUpperCase() || 'U'}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '4px'
-                    }}>
-                      <div style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '14px' }}>
-                        {comment.username || 'Unknown User'}
-                      </div>
+                  <div className="comment-content">
+                    <div className="comment-meta">
+                      <div className="comment-author">{comment.username || 'Unknown User'}</div>
                       <button
                         onClick={() => setReplyingTo(comment._id)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--primary)',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          padding: '2px 6px',
-                          borderRadius: '4px'
-                        }}
+                        className="reply-btn"
+                        type="button"
                       >
                         Reply
                       </button>
                     </div>
-                    <div style={{ 
-                      color: 'var(--text-secondary)',
-                      fontSize: '14px',
-                      lineHeight: '1.4'
-                    }}>
-                      {comment.text}
-                    </div>
+                    <div className="comment-text">{comment.text}</div>
                   </div>
                 </div>
 
-                {/* Reply Form */}
                 {replyingTo === comment._id && (
-                  <form 
-                    onSubmit={(e) => handleReplySubmit(comment._id, e)}
-                    style={{ 
-                      marginTop: '8px',
-                      marginLeft: '36px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <div className="avatar" style={{ 
-                        width: '24px', 
-                        height: '24px', 
-                        fontSize: '10px',
-                        background: 'var(--primary)',
-                        minWidth: '24px'
-                      }}>
+                  <form onSubmit={(e) => handleReplySubmit(comment._id, e)} className="reply-form">
+                    <div className="reply-actions">
+                      <div
+                        className="avatar"
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          minWidth: '24px',
+                          fontSize: '10px',
+                          background: 'linear-gradient(135deg, #16a34a 0%, #4ade80 100%)',
+                          boxShadow: 'none'
+                        }}
+                      >
                         {currentUser?.username?.charAt(0)?.toUpperCase() || 'Y'}
                       </div>
                       <input
@@ -279,31 +241,11 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder="Write a reply..."
-                        style={{
-                          flex: 1,
-                          padding: '6px 10px',
-                          border: '1px solid var(--border)',
-                          borderRadius: '16px',
-                          fontSize: '13px',
-                          outline: 'none'
-                        }}
+                        className="reply-input"
+                        style={{ flex: 1 }}
                         autoFocus
                       />
-                      <button
-                        type="submit"
-                        disabled={!replyText.trim()}
-                        style={{
-                          background: 'var(--primary)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '16px',
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          cursor: 'pointer',
-                          opacity: !replyText.trim() ? 0.5 : 1
-                        }}
-                      >
+                      <button type="submit" disabled={!replyText.trim()} className="reply-submit">
                         Post
                       </button>
                       <button
@@ -312,15 +254,7 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
                           setReplyingTo(null);
                           setReplyText('');
                         }}
-                        style={{
-                          background: 'none',
-                          border: '1px solid var(--border)',
-                          borderRadius: '16px',
-                          padding: '6px 10px',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          color: 'var(--text-secondary)'
-                        }}
+                        className="cancel-btn"
                       >
                         Cancel
                       </button>
@@ -328,33 +262,26 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
                   </form>
                 )}
 
-                {/* Replies Display (if you have nested replies in your data) */}
                 {comment.replies && comment.replies.length > 0 && (
-                  <div style={{ 
-                    marginTop: '8px',
-                    marginLeft: '36px'
-                  }}>
-                    {comment.replies.map(reply => (
-                      <div key={reply._id} style={{ 
-                        display: 'flex', 
-                        alignItems: 'flex-start', 
-                        gap: '6px', 
-                        marginBottom: '6px',
-                        fontSize: '13px'
-                      }}>
-                        <div className="avatar" style={{ 
-                          width: '20px', 
-                          height: '20px', 
-                          fontSize: '10px',
-                          background: '#9CA3AF'
-                        }}>
+                  <div className="reply-list">
+                    {comment.replies.map((reply) => (
+                      <div key={reply._id} className="reply-item">
+                        <div
+                          className="avatar"
+                          style={{
+                            width: '20px',
+                            height: '20px',
+                            minWidth: '20px',
+                            fontSize: '10px',
+                            background: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
+                            boxShadow: 'none'
+                          }}
+                        >
                           {reply.username?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
-                        <div>
-                          <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
-                            {reply.username || 'Unknown User'}
-                          </span>
-                          <span style={{ color: 'var(--text-secondary)', marginLeft: '6px' }}>
+                        <div className="reply-body">
+                          <span className="comment-author">{reply.username || 'Unknown User'}</span>
+                          <span className="reply-text" style={{ marginLeft: '6px' }}>
                             {reply.text}
                           </span>
                         </div>
@@ -364,26 +291,25 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
                 )}
               </div>
             ))}
-            
+
             {(!post.comments || post.comments.length === 0) && (
-              <div className="text-center" style={{ 
-                padding: '20px', 
-                color: 'var(--text-secondary)' 
-              }}>
+              <div className="text-center" style={{ padding: '20px', color: 'var(--text-secondary)' }}>
                 No comments yet. Be the first to comment!
               </div>
             )}
           </div>
-          
-          {/* Main Comment Form */}
-          <form onSubmit={handleCommentSubmit} style={{ display: 'flex', gap: '8px' }}>
-            <div className="avatar" style={{ 
-              width: '32px', 
-              height: '32px', 
-              fontSize: '14px',
-              background: 'var(--primary)',
-              minWidth: '32px'
-            }}>
+
+          <form onSubmit={handleCommentSubmit} className="comment-form">
+            <div
+              className="avatar"
+              style={{
+                width: '32px',
+                height: '32px',
+                minWidth: '32px',
+                fontSize: '14px',
+                background: 'linear-gradient(135deg, #16a34a 0%, #4ade80 100%)'
+              }}
+            >
               {currentUser?.username?.charAt(0)?.toUpperCase() || 'Y'}
             </div>
             <input
@@ -391,28 +317,13 @@ const PostCard = ({ post, currentUser, onLike, onDelete, onComment }) => {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Write a comment..."
-              style={{
-                flex: 1,
-                padding: '10px 14px',
-                border: '1px solid var(--border)',
-                borderRadius: '20px',
-                fontSize: '14px',
-                outline: 'none'
-              }}
+              className="comment-input"
+              style={{ flex: 1 }}
             />
             <button
               type="submit"
               disabled={commentLoading || !newComment.trim()}
-              style={{
-                background: 'var(--primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '20px',
-                padding: '10px 16px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                opacity: commentLoading || !newComment.trim() ? 0.5 : 1
-              }}
+              className="comment-submit"
             >
               {commentLoading ? '...' : 'Post'}
             </button>

@@ -14,12 +14,12 @@ const CreatePost = ({ onPostCreated }) => {
         alert('Please select an image file');
         return;
       }
-      
+
       if (file.size > 5 * 1024 * 1024) {
         alert('Image size should be less than 5MB');
         return;
       }
-      
+
       setImage(file);
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -31,14 +31,14 @@ const CreatePost = ({ onPostCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!text.trim() && !image) {
       alert('Please enter text or upload an image');
       return;
     }
 
     setLoading(true);
-    
+
     try {
       const formData = new FormData();
       if (text.trim()) {
@@ -50,13 +50,11 @@ const CreatePost = ({ onPostCreated }) => {
 
       const response = await postsAPI.createPost(formData);
       onPostCreated(response.data);
-      
-      // Reset form
+
       setText('');
       setImage(null);
       setImagePreview(null);
-      
-      // Reset file input
+
       const fileInput = document.getElementById('image-upload');
       if (fileInput) {
         fileInput.value = '';
@@ -81,18 +79,26 @@ const CreatePost = ({ onPostCreated }) => {
   return (
     <div className="create-post">
       <form onSubmit={handleSubmit}>
+        <div className="create-post-header">
+          <div>
+            <div className="create-post-title">Create a drop</div>
+            <div className="create-post-subtitle">Share a status, screenshot, or quick win.</div>
+          </div>
+          <span className="section-chip">New post</span>
+        </div>
+
         <textarea
-          placeholder="What's on your mind?"
+          placeholder="What's on your mind, captain?"
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows="3"
         />
-        
+
         {imagePreview && (
           <div className="image-preview-container">
-            <img 
-              src={imagePreview} 
-              alt="Preview" 
+            <img
+              src={imagePreview}
+              alt="Preview"
               className="image-preview"
             />
             <button
@@ -101,11 +107,11 @@ const CreatePost = ({ onPostCreated }) => {
               onClick={handleRemoveImage}
               title="Remove image"
             >
-              ×
+              &times;
             </button>
           </div>
         )}
-        
+
         <div className="post-actions">
           <label className="btn-secondary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -122,7 +128,7 @@ const CreatePost = ({ onPostCreated }) => {
               style={{ display: 'none' }}
             />
           </label>
-          
+
           <button
             type="submit"
             className="btn-primary"

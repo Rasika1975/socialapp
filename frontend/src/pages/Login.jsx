@@ -23,7 +23,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
@@ -40,10 +40,10 @@ const Login = () => {
     try {
       const response = await authAPI.login(formData);
       const { token, ...user } = response.data;
-      
+
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       navigate('/feed', { replace: true });
     } catch (error) {
       setError(error.response?.data?.message || 'Login failed. Please check your credentials.');
@@ -55,9 +55,10 @@ const Login = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
+        <div className="section-chip auth-badge">Player Login</div>
         <h1 className="auth-title">Welcome Back</h1>
-        <p className="auth-subtitle">Sign in to continue to MiniSocial</p>
-        
+        <p className="auth-subtitle">Sign in to continue to MiniSocial and rejoin your live social arena.</p>
+
         {successMessage && (
           <div className="auth-message success">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -67,7 +68,7 @@ const Login = () => {
             {successMessage}
           </div>
         )}
-        
+
         {error && (
           <div className="auth-message error">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -78,7 +79,7 @@ const Login = () => {
             {error}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="auth-input-container">
             <input
@@ -95,7 +96,7 @@ const Login = () => {
               <polyline points="22,6 12,13 2,6"></polyline>
             </svg>
           </div>
-          
+
           <div className="auth-input-container">
             <input
               type="password"
@@ -111,7 +112,7 @@ const Login = () => {
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </div>
-          
+
           <button
             type="submit"
             className="btn-auth"
@@ -120,19 +121,23 @@ const Login = () => {
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
-        
+
         <p className="text-light">
           Don't have an account?{' '}
-          <a href="/signup" className="auth-link" onClick={(e) => {
-            e.preventDefault();
-            navigate('/signup');
-          }}>
+          <a
+            href="/signup"
+            className="auth-link"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/signup');
+            }}
+          >
             Sign up
           </a>
         </p>
-        
+
         <p className="auth-footer">
-          © {new Date().getFullYear()} MiniSocial. All rights reserved.
+          &copy; {new Date().getFullYear()} MiniSocial. All rights reserved.
         </p>
       </div>
     </div>

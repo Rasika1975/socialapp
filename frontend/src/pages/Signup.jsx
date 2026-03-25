@@ -21,7 +21,7 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.username || !formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
@@ -47,8 +47,8 @@ const Signup = () => {
 
     try {
       await authAPI.signup(formData);
-      navigate('/login', { 
-        state: { message: 'Account created successfully! Please login.' } 
+      navigate('/login', {
+        state: { message: 'Account created successfully! Please login.' }
       });
     } catch (error) {
       setError(error.response?.data?.message || 'Signup failed. Please try again.');
@@ -60,9 +60,10 @@ const Signup = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
+        <div className="section-chip auth-badge">New Player</div>
         <h1 className="auth-title">Create Account</h1>
-        <p className="auth-subtitle">Join our community today</p>
-        
+        <p className="auth-subtitle">Join the community and launch into a premium, mobile-first social feed.</p>
+
         {error && (
           <div className="auth-message error">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -73,7 +74,7 @@ const Signup = () => {
             {error}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="auth-input-container">
             <input
@@ -90,7 +91,7 @@ const Signup = () => {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
-          
+
           <div className="auth-input-container">
             <input
               type="email"
@@ -106,7 +107,7 @@ const Signup = () => {
               <polyline points="22,6 12,13 2,6"></polyline>
             </svg>
           </div>
-          
+
           <div className="auth-input-container">
             <input
               type="password"
@@ -122,7 +123,7 @@ const Signup = () => {
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </div>
-          
+
           <button
             type="submit"
             className="btn-auth"
@@ -131,19 +132,23 @@ const Signup = () => {
             {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
-        
+
         <p className="text-light">
           Already have an account?{' '}
-          <a href="/login" className="auth-link" onClick={(e) => {
-            e.preventDefault();
-            navigate('/login');
-          }}>
+          <a
+            href="/login"
+            className="auth-link"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/login');
+            }}
+          >
             Sign in
           </a>
         </p>
-        
+
         <p className="auth-footer">
-          © {new Date().getFullYear()} MiniSocial. All rights reserved.
+          &copy; {new Date().getFullYear()} MiniSocial. All rights reserved.
         </p>
       </div>
     </div>
